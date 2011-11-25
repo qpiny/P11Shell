@@ -15,7 +15,7 @@ public abstract class AttributeFormat {
 	public abstract int getDefaultSize();
 	public abstract Object toObject(Pointer<?> value, int size) throws InvalidAttributeException;
 	public abstract String toString(Pointer<?> value, int size) throws InvalidAttributeException;
-	public abstract void setAttribute(Attribute attribute, Object value);
+	public abstract Attribute setAttribute(Attribute attribute, Object value);
 	public abstract Attribute createAttribute(AttributeType type);
 	public abstract Attribute createAttribute(AttributeType type, int size);
 }
@@ -38,10 +38,11 @@ class StringFormat extends AttributeFormat {
 	}
 	
 	@Override
-	public void setAttribute(Attribute attribute, Object value) {
+	public Attribute setAttribute(Attribute attribute, Object value) {
 		String s = (String) value;
 		attribute.value(Pointer.pointerToString(s, StringType.C, Charset.defaultCharset()));
 		attribute.size(s.length());
+		return attribute;
 	}
 
 	@Override
@@ -79,7 +80,7 @@ class IntegerFormat extends AttributeFormat {
 	}
 
 	@Override
-	public void setAttribute(Attribute attribute, Object value) {
+	public Attribute setAttribute(Attribute attribute, Object value) {
 		if (value instanceof Long) {
 			attribute.value(Pointer.pointerToLong(((Long)value).longValue()));
 			attribute.size(8);				
@@ -96,6 +97,7 @@ class IntegerFormat extends AttributeFormat {
 			attribute.value(Pointer.pointerToByte(((Byte)value).byteValue()));
 			attribute.size(1);				
 		}
+		return attribute;
 	}
 
 	@Override
@@ -131,9 +133,10 @@ class BooleanFormat extends AttributeFormat {
 	}
 
 	@Override
-	public void setAttribute(Attribute attribute, Object value) {
+	public Attribute setAttribute(Attribute attribute, Object value) {
 		attribute.value(Pointer.pointerToBoolean((Boolean)value));
 		attribute.size(1);
+		return attribute;
 	}
 
 	@Override
@@ -165,10 +168,11 @@ class BinaryFormat extends AttributeFormat {
 	}
 
 	@Override
-	public void setAttribute(Attribute attribute, Object value) {
+	public Attribute setAttribute(Attribute attribute, Object value) {
 		byte[] b = (byte[])value;
 		attribute.value(Pointer.pointerToBytes(b));
 		attribute.size(b.length);
+		return attribute;
 	}
 
 	@Override
@@ -203,11 +207,12 @@ class EnumFormat<T extends P11Enum> extends IntegerFormat {
 	}
 
 	@Override
-	public void setAttribute(Attribute attribute, Object value) {
+	public Attribute setAttribute(Attribute attribute, Object value) {
 		if (value instanceof String) {
 			String s = (String) value;
 			super.setAttribute(attribute, Integer.valueOf(e.valueOf(s).getValue()));
 		}
+		return attribute;
 	}
 	
 }

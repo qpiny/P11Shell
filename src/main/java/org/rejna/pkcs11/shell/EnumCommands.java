@@ -3,10 +3,13 @@ package org.rejna.pkcs11.shell;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.rejna.pkcs11.Attribute;
 import org.rejna.pkcs11.AttributeType;
+import org.rejna.pkcs11.Defs;
 import org.rejna.pkcs11.InvalidMechanismException;
 import org.rejna.pkcs11.MechanismType;
 import org.rejna.pkcs11.P11Exception;
+import org.rejna.pkcs11.P11Object;
 import org.rejna.pkcs11.PKCS11;
 
 
@@ -61,7 +64,13 @@ public enum EnumCommands {
 	LOGIN {
 		@Override
 		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception, IOException {
-			state.getPKCS11().login(state.getPIN());
+			try {
+				state.getPKCS11().login(state.getPIN());
+			} catch (P11Exception e) {
+				if (e.getCode() != Defs.CKR_USER_ALREADY_LOGGED_IN)
+					throw e;
+				System.out.println("Already logged");
+			}
 			state.setLogged(true);
 		}
 	},
@@ -96,20 +105,25 @@ public enum EnumCommands {
 	},
 	FIND_OBJECTS {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			
+		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
+			for (P11Object o : p11.findObjects(state.getAttributes()))
+				System.out.println(o);
 		}
 	},
 	GET_ATTRIBUTE {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			
+		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws NumberFormatException, P11Exception {
+			for (Attribute attribute : state.getAttributes()) {
+				p11.getAttribute(new P11Object(Integer.parseInt(args[2])), attribute);
+				System.out.println(attribute);
+			}
 		}
 	},
 	SET_ATTRIBUTE {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			
+		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws NumberFormatException, P11Exception {
+			for (Attribute attribute : state.getAttributes())
+				p11.setAttribute(new P11Object(Integer.parseInt(args[2])), attribute);
 		}
 	},
 	WRAP {
@@ -133,25 +147,26 @@ public enum EnumCommands {
 	TEMPLATE_ADD {
 		@Override
 		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			AttributeType.valueOf(args[3]);
+			state.addAttribute(AttributeType.valueOf(args[2]).getAttribute(args[3]));
 		}
 	},
 	TEMPLATE_REMOVE {
 		@Override
 		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			
+			state.removeAttribute(AttributeType.valueOf(args[2]));
 		}
 	},
 	TEMPLATE_CLEAR {
 		@Override
 		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			
+			state.clearAttribute();
 		}
 	},
 	TEMPLATE_LIST {
 		@Override
 		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			
+			for (Attribute attribute : state.getAttributes())
+				System.out.println(attribute);
 		}
 	};	
 

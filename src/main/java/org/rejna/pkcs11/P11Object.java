@@ -9,7 +9,7 @@ public class P11Object {
 	}
 
 	public Attribute getAttribute(AttributeType type) throws P11Exception {
-		Attribute template = type.getTemplate();
+		Attribute template = type.getAttribute();
 		try {
 			PKCS11.getInstance().getAttribute(this, template);
 		} catch (P11Exception e) {
@@ -20,7 +20,7 @@ public class P11Object {
 	}
 	
 	public Attribute getAttribute(AttributeType type, int size) throws P11Exception {
-		Attribute template = type.getTemplate(size);
+		Attribute template = type.getAttribute(size);
 		try {
 			PKCS11.getInstance().getAttribute(this, template);
 		} catch (P11Exception e) {

@@ -10,291 +10,97 @@ public enum AttributeType implements P11Enum {
 	},
 	CKA_TOKEN(0x00000001, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_PRIVATE(0x00000002, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };P11EnumWrapper
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_LABEL(0x00000003, AttributeFormat.STRING) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper getPossible() { return null; }
 	},
 	CKA_APPLICATION(0x00000010, AttributeFormat.STRING) {
-		@Override
-		public P11EnumWrapper getPossible() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper getPossible() { return null; }
 	},
 	CKA_VALUE(0x00000011, AttributeFormat.BINARY) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<P11Enum> getPossible() { return null; }
 	},
 	CKA_OBJECT_ID(0x00000012, AttributeFormat.BINARY) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<P11Enum> getPossible() { return null; }
 	},
 	CKA_CERTIFICATE_TYPE(0x00000080, AttributeFormat.INTEGER) { // CKC ?
 		@Override
-		public P11EnumWrapper getPossible() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<P11Enum> getPossible() { return null; }
 	},
 	CKA_ISSUER(0x00000081, AttributeFormat.BINARY) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<P11Enum> getPossible() { return null; }
 	}, // structured
 	CKA_SERIAL_NUMBER(0x00000082, AttributeFormat.BINARY) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<P11Enum> getPossible() { return null; }
 	},
 	CKA_AC_ISSUER(0x00000083, AttributeFormat.BINARY) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<P11Enum> getPossible() { return null; }
 	}, // like CKA_ISSUER ?
 	CKA_OWNER(0x00000084, AttributeFormat.INTEGER) { // CKU
 		@Override
-		public P11EnumWrapper getPossible() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<P11Enum> getPossible() { return null; }
 	},
 	//CKA_ATTR_TYPES(0x00000085, AttributeFormat.INTEGER),
 	CKA_TRUSTED(0x00000086, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_KEY_TYPE(0x00000100, AttributeFormat.INTEGER) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return enumToString(KeyType.values());
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<P11Enum> getPossible() { return null; }
 	},
 //	CKA_SUBJECT(0x00000101),
 //	CKA_ID(0x00000102),
 	CKA_SENSITIVE(0x00000103, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_ENCRYPT(0x00000104, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_DECRYPT(0x00000105, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_WRAP(0x00000106, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_UNWRAP(0x00000107, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_SIGN(0x00000108, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_SIGN_RECOVER(0x00000109, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_VERIFY(0x0000010A, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_VERIFY_RECOVER(0x0000010B, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_DERIVE(0x0000010C, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 //	CKA_START_DATE(0x00000110),
 //	CKA_END_DATE(0x00000111),
@@ -316,64 +122,24 @@ public enum AttributeType implements P11Enum {
 //	CKA_VALUE_LEN(0x00000161),
 	CKA_EXTRACTABLE(0x00000162, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_LOCAL(0x00000163, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_NEVER_EXTRACTABLE(0x00000164, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	CKA_ALWAYS_SENSITIVE(0x00000165, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	},
 	//CKA_KEY_GEN_MECHANISM(0x00000166),
 	CKA_MODIFIABLE(0x00000170, AttributeFormat.BOOLEAN) {
 		@Override
-		public P11EnumWrapper getPossible() {
-			return new String[] { "true", "false" };
-		}
-
-		@Override
-		public Object parse(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public P11EnumWrapper<BooleanType> getPossible() { return BooleanType.P11Enum; }
 	};
 	//CKA_ECDSA_PARAMS(0x00000180),
 	//CKA_EC_PARAMS(0x00000180),
@@ -417,21 +183,30 @@ public enum AttributeType implements P11Enum {
 		return format.toObject(attribute.value(), attribute.size());
 	}
 	
-	public Attribute getTemplate() {
+	public Attribute getAttribute() {
 		return format.createAttribute(this);
 	}
 	
-	public Attribute getTemplate(int size) {
+	public Attribute getAttribute(int size) {
 		return format.createAttribute(this, size);
 	}
 	
-	public void fillTemplate(Attribute attribute, Object value) {
+	public Attribute getAttribute(Object value) {
+		return fillTemplate(getAttribute(), value);
+	}
+
+	public Attribute getAttribute(String value) {
+		return fillTemplate(getAttribute(), value);
+	}
+
+	public Attribute fillTemplate(Attribute attribute, Object value) {
 		attribute.attributeType(this);
-		format.setAttribute(attribute, value);
+		return format.setAttribute(attribute, value);
 	}
 	
-	public void fillTemplate(Attribute attribute, String value) {
-		fillTemplate(attribute, getPossible().valueOf(value));
+	public Attribute fillTemplate(Attribute attribute, String value) {
+		P11EnumWrapper<?> possible = getPossible();
+		return fillTemplate(attribute, possible == null ? (Object) value : possible.valueOf(value).getValue());
 	}
 	
 	public abstract <T extends P11Enum> P11EnumWrapper<T> getPossible();
@@ -443,8 +218,7 @@ public enum AttributeType implements P11Enum {
 		return ret;
 	}
 
-	static final P11EnumWrapper<AttributeType> P11Enum = new  P11EnumWrapper<AttributeType>() {
-		@Override public AttributeType valueOf(int value) { return AttributeType.valueOf(value); }
+	public static final P11EnumWrapper<AttributeType> P11Enum = new  P11EnumWrapper<AttributeType>() {
 		@Override public AttributeType valueOf(String str) { return AttributeType.valueOf(str); }
 		@Override public AttributeType[] values() { return AttributeType.values(); }
 	};

@@ -7,7 +7,7 @@ import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.rejna.pkcs11.AttributeType;
-import org.rejna.pkcs11.P11Enum;
+import org.rejna.pkcs11.BooleanType;
 
 import jline.Completor;
 import jline.ConsoleReader;
@@ -29,13 +29,21 @@ public class P11Completor implements Completor {
 				new StaticToken("slot",			new AnyToken(EnumCommands.SELECT_SLOT))),
 			new StaticToken("list",
 				new StaticToken("slot",			EnumCommands.LIST_SLOT),
-				new StaticToken("mechanism",	EnumCommands.LIST_MECHANISM)),
+				new StaticToken("mechanism",	EnumCommands.LIST_MECHANISM),
+				new StaticToken("object",		EnumCommands.FIND_OBJECTS)),
+			new StaticToken("get",				new StaticToken("attribute", new AnyToken(EnumCommands.GET_ATTRIBUTE))),
+			new StaticToken("set",				new StaticToken("attribute", new AnyToken(EnumCommands.SET_ATTRIBUTE))),
 			new StaticToken("template",
-				new StaticToken("add",			new EnumToken<AttributeType>(new  P11Enum<AttributeType>() {
-					@Override public AttributeType valueOf(int v) { return AttributeType.valueOf(v); }
-					@Override public AttributeType[] values() { return AttributeType.values(); }
-				},
-						new AttributeToken(EnumCommands.TEMPLATE_ADD))))
+				new StaticToken("add",			new AttributeToken(EnumCommands.TEMPLATE_ADD)),
+				new StaticToken("remove",		new EnumToken<AttributeType>(AttributeType.P11Enum, EnumCommands.TEMPLATE_REMOVE)),
+				new StaticToken("list",			EnumCommands.TEMPLATE_LIST),
+				new StaticToken("clear",		EnumCommands.TEMPLATE_CLEAR)),
+			new StaticToken("open",				new StaticToken("session", new EnumToken<BooleanType>(BooleanType.P11Enum, EnumCommands.OPEN_SESSION))),
+			new StaticToken("close",			
+				new StaticToken("session",		EnumCommands.CLOSE_SESSION),
+				new StaticToken("all",			new StaticToken("session", EnumCommands.CLOSE_ALL_SESSION))),
+			new StaticToken("login", EnumCommands.LOGIN),
+			new StaticToken("logout", EnumCommands.LOGOUT)
 		};
 	}
 
