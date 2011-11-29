@@ -44,19 +44,19 @@ public class Main {
 						
 						
 						/* first public key */
-						P11Object publicKey = p11.findObjects(
+						/*P11Object publicKey = p11.findObjects(
 								p11.createAttribute(AttributeType.CKA_CLASS, Defs.CKO_PUBLIC_KEY),
 								p11.createAttribute(AttributeType.CKA_WRAP, true)
 								)[0];
 						System.out.println("First public key : " + publicKey);
-						
+						*/
 						/* first private key */
-						P11Object privateKey = p11.findObjects(
+						/*P11Object privateKey = p11.findObjects(
 								p11.createAttribute(AttributeType.CKA_CLASS, Defs.CKO_PRIVATE_KEY)
 								//p11.createAttribute(AttributeType.CKA_EXTRACTABLE, true)
 								)[0];
 						System.out.println("First private key : " + privateKey);
-						
+						*/
 						
 						/* create key */
 						/*

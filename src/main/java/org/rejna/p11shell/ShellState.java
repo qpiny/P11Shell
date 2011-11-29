@@ -1,4 +1,4 @@
-package org.rejna.pkcs11.shell;
+package org.rejna.p11shell;
 
 import java.io.IOException;
 import java.util.Iterator;

@@ -1,6 +1,7 @@
 package org.rejna.pkcs11;
 
 import java.nio.charset.Charset;
+import java.util.EnumSet;
 
 import org.bridj.Pointer;
 import org.bridj.Pointer.StringType;
@@ -11,7 +12,7 @@ public abstract class AttributeFormat {
 	public final static AttributeFormat INTEGER = new IntegerFormat();
 	public final static AttributeFormat BOOLEAN = new BooleanFormat();
 	public final static AttributeFormat BINARY = new BinaryFormat();
-	public <T extends P11Enum> AttributeFormat ENUM(P11EnumWrapper<T> e) { return new EnumFormat<T>(e); };
+	public <T extends Enum<T>> AttributeFormat ENUM(Class<T> c) { return new EnumFormat<T>(c); };
 	public abstract int getDefaultSize();
 	public abstract Object toObject(Pointer<?> value, int size) throws InvalidAttributeException;
 	public abstract String toString(Pointer<?> value, int size) throws InvalidAttributeException;
@@ -47,12 +48,12 @@ class StringFormat extends AttributeFormat {
 
 	@Override
 	public Attribute createAttribute(AttributeType type) {
-		return PKCS11.getInstance().createAttribute(type, Pointer.allocateBytes(getDefaultSize()));		
+		return createAttribute(type, getDefaultSize());		
 	}
 
 	@Override
 	public Attribute createAttribute(AttributeType type, int size) {
-		return PKCS11.getInstance().createAttribute(type, Pointer.allocateBytes(size));
+		return PKCS11.getInstance().createAttribute(type, new String(new char[size]));
 	}
 }
 
@@ -182,15 +183,15 @@ class BinaryFormat extends AttributeFormat {
 
 	@Override
 	public Attribute createAttribute(AttributeType type, int size) {
-		return PKCS11.getInstance().createAttribute(type, Pointer.allocateBytes(size));
+		return PKCS11.getInstance().createAttribute(type, new byte[size]);
 	}
 }
 
-class EnumFormat<T extends P11Enum> extends IntegerFormat {
-	private P11EnumWrapper<T> e;
+class EnumFormat<T extends Enum<T>> extends IntegerFormat {
+	private Class<T> c;
 	
-	public EnumFormat(P11EnumWrapper<T> e) {
-		this.e = e;
+	public EnumFormat(Class<T> c) {
+		this.c = c;
 	}
 /*
 	@Override
@@ -203,14 +204,25 @@ class EnumFormat<T extends P11Enum> extends IntegerFormat {
 	@Override
 	public String toString(Pointer<?> value, int size)
 			throws InvalidAttributeException {
-		return e.valueOf(((Number)toObject(value, size)).intValue()).name();
+		for (T e : EnumSet.allOf(c)) {
+			P11Enum pe = (P11Enum) e; 
+			if (pe.getValue() == ((Number)toObject(value, size)).intValue())
+				return pe.name(); 
+		}
+		return "";
 	}
 
 	@Override
 	public Attribute setAttribute(Attribute attribute, Object value) {
 		if (value instanceof String) {
 			String s = (String) value;
-			super.setAttribute(attribute, Integer.valueOf(e.valueOf(s).getValue()));
+			for (T e : EnumSet.allOf(c)) {
+				P11Enum pe = (P11Enum) e; 
+				if (pe.name().equals(s)) {
+					super.setAttribute(attribute, pe.getValue());
+					break;
+				}
+			}
 		}
 		return attribute;
 	}

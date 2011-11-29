@@ -24,7 +24,7 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -64,15 +64,24 @@
 			<artifactId>jline</artifactId>
 			<version>1.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.javatuples</groupId>
+			<artifactId>javatuples</artifactId>
+			<version>1.2</version>
+		</dependency>
+
 	</dependencies>
-	
-		<repositories>
+
+	<repositories>
 		<repository>
 			<id>nativelibs4java-repo</id>
 			<url>http://nativelibs4java.sourceforge.net/maven</url>
 		</repository>
+
 	</repositories>
-	
+
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>nativelibs4java-repo</id>

@@ -1,9 +1,5 @@
 package org.rejna.pkcs11;
 
-
-
-import xltck.XltCkLibrary;
-
 public abstract class PKCS11 {
 	private static PKCS11 instance = null;
 	
@@ -23,7 +19,7 @@ public abstract class PKCS11 {
 	}
 	
 	public void checkRet(int ret) throws P11Exception {
-		if (ret != XltCkLibrary.CKR_OK)
+		if (ret != Defs.CKR_OK)
 			throw new P11Exception(ret);
 	}
 	

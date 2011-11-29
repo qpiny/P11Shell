@@ -13,9 +13,4 @@ public enum BooleanType implements P11Enum {
 	public int getValue() {
 		return value;
 	}
-
-	public static final P11EnumWrapper<BooleanType> P11Enum = new  P11EnumWrapper<BooleanType>() {
-		@Override public BooleanType valueOf(String str) { return BooleanType.valueOf(str); }
-		@Override public BooleanType[] values() { return BooleanType.values(); }
-	};
 }

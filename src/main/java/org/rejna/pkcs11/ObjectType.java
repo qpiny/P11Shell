@@ -26,10 +26,4 @@ public enum ObjectType implements P11Enum {
 				return o;
 		return null;
 	}
-	
-	static final P11EnumWrapper<ObjectType> P11Enum = new  P11EnumWrapper<ObjectType>() {
-		@Override public ObjectType valueOf(int value) { return ObjectType.valueOf(value); }
-		@Override public ObjectType valueOf(String str) { return ObjectType.valueOf(str); }
-		@Override public ObjectType[] values() { return ObjectType.values(); }
-	};
 }

@@ -1,8 +1,7 @@
 package org.rejna.p11shell;
 
 import org.rejna.pkcs11.PKCS11;
-import org.rejna.pkcs11.shell.P11Completor;
-import org.rejna.pkcs11.shell.ShellState;
+import org.rejna.shell.ShellCompletor;
 
 public class TestShell {
 
@@ -11,7 +10,7 @@ public class TestShell {
 	 */
 	public static void main(String[] args) {
 		ShellState state = new ShellState(PKCS11.getInstance(32), null);
-		P11Completor p11cmds = new P11Completor(null, state);
+		ShellCompletor<ShellState, P11Commands> p11cmds = new ShellCompletor<ShellState, P11Commands>(null, P11Commands.values(), state);
 		try {
 			p11cmds.execute("info library");
 		} catch (Exception e) {
