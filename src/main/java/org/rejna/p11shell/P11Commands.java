@@ -11,6 +11,7 @@ import org.rejna.pkcs11.MechanismType;
 import org.rejna.pkcs11.P11Exception;
 import org.rejna.pkcs11.P11Object;
 import org.rejna.pkcs11.PKCS11;
+import org.rejna.pkcs11.BooleanType;
 import org.rejna.shell.AnyToken;
 import org.rejna.shell.EnumToken;
 import org.rejna.shell.ShellCommand;
@@ -84,7 +85,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 			return state.getSlot() != -1;
 		}
 	},
-	OPEN_SESSION(_("open"), _("session")) {
+	OPEN_SESSION(_("open"), _("session"), new EnumToken<BooleanType>(BooleanType.class)) {
 		@Override
 		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
 			state.getPKCS11().openSession(slot, Boolean.parseBoolean(args[2]));
@@ -93,7 +94,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 
 		@Override
 		public boolean available(ShellState state) {
-			return state.getSlot() != -1;
+			return state.getSlot() != -1 && !state.isInSession();
 		}
 	},
 	LOGIN(_("login")) {
@@ -111,7 +112,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 
 		@Override
 		public boolean available(ShellState state) {
-			return state.isInSession();
+			return state.isInSession() && !state.isLogged();
 		}
 	},
 	LOGOUT(_("logout")) {

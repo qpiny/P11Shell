@@ -112,20 +112,20 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 	
 	public String showCompletion(String line) {
 		HashMap<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> commandTree = buildCommandTree(line);
-		
+		/*
 		int depth = 0;
 		for (Entry<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> ct : commandTree.entrySet()) {
 			int d = ct.getValue().getMaxDepth();
 			if (d > depth)
 				depth = d;
 		}
-		
+		*/
 		System.out.println();
 		Vector<String> lines = new Vector<String>();
 		for (Entry<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> ct : commandTree.entrySet()) {
 			TreeNode<Pair<String, Boolean>> tree = ct.getValue();
 			//System.out.println("Tree:" + ct.getKey().toString() + " -> " + tree);
-			if (depth == tree.getMaxDepth())
+			if (tree.getMaxDepth() > 0)
 				showTree("", ct.getValue(), lines);
 		}
 		
