@@ -13,6 +13,40 @@ import org.rejna.tree.TreeNode;
 import jline.Completor;
 import jline.ConsoleReader;
 
+
+class TokenNode<T> {
+	Token token;
+	String word;
+	boolean complete;
+	ShellCommand<T> Command;
+	boolean exact;
+	
+	public TokenNode(ShellCommand<T> command, Token token, String word, boolean complete, boolean exact) {
+		this.token = token;
+		this.word = word;
+		this.complete = complete;
+		this.Command = command;
+		this.exact = exact;
+	}
+	public TokenNode<T> complete(boolean complete) {
+		this.complete = complete;
+		return this;
+	}
+	public boolean complete() {
+		return complete;
+	}
+	public String word() {
+		return word;
+	}
+	public TokenNode<T> exact(boolean exact) {
+		this.exact = exact;
+		return this;
+	}
+	public boolean exact() {
+		return exact;
+	}
+}
+
 public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements Completor {
 	private ConsoleReader console;
 	private STATE state;
@@ -56,41 +90,40 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 		return first.substring(0, best);
 	}
 
-	public boolean match(int index, String line, Token[] tokens, TreeNode<Pair<String, Boolean>> possible) {
-		if (index >= tokens.length)
-			return "".equals(line);
+	public boolean match(int index, String line, ShellCommand<STATE> command, Token[] tokens, TreeNode<TokenNode<STATE>> tree) {
 		boolean completed = false;
-		for (Pair<String, String> p : tokens[index].matches(line)) {
-			TreeNode<Pair<String, Boolean>> currentNode = possible.addChild(new Pair<String, Boolean>(p.getValue0(), false));
-			if (match(index + 1, p.getValue1(), tokens, currentNode)) {
-				currentNode.setData(currentNode.getData().setAt1(true));
-				completed = true;
+		if (index < tokens.length) {
+			for (Pair<String, String> p : tokens[index].matches(line)) {
+				TreeNode<TokenNode<STATE>> node = tree.addChild(
+						new TokenNode<STATE>(command, tokens[index], p.getValue0(), false, line.startsWith(p.getValue0())));
+				if (match(index + 1, p.getValue1(), command, tokens, node)) {
+					node.getData().complete(true);
+					completed = true;
+				}
 			}
 		}
+		else 
+			completed = "".equals(line);
 		return completed;
 	}
 	
-	public HashMap<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> buildCommandTree(String line) {
-		HashMap<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> commandTree = new HashMap<ShellCommand<STATE>, TreeNode<Pair<String,Boolean>>>();
+	public TreeNode<TokenNode<STATE>> buildCommandTree(String line) {
+		TreeNode<TokenNode<STATE>> tree = TreeNode.newTree(new TokenNode<STATE>(null, null, "", false, false));   //new HashMap<ShellCommand<STATE>, TreeNode<TokenNode>>();
 		
 		for (ShellCommand<STATE> command : commands) {
-			if (command.available(state)) {
-				TreeNode<Pair<String, Boolean>> tree = TreeNode.newTree(new Pair<String, Boolean>("", false));
-				if (match(0, line, command.getTokens(), tree))
-					tree.setData(tree.getData().setAt1(true));
-				commandTree.put(command, tree);
-			}
+			if (command.available(state))
+				match(0, line, command, command.getTokens(), tree);
 		}
-		return commandTree;
+		return tree;
 	}
 	
-	public void showTree(String prefix, TreeNode<Pair<String, Boolean>> tree, Vector<String> lines) {
+	public void showTree(String prefix, TreeNode<TokenNode<STATE>> tree, Vector<String> lines) {
 		boolean isEmpty = true;
-		if (!"".equals(prefix))
+		if (!"".equals(prefix) && !prefix.endsWith(" "))
 			prefix = prefix + " ";
-		for (TreeNode<Pair<String, Boolean>> node : tree) {
+		for (TreeNode<TokenNode<STATE>> node : tree) {
 			isEmpty = false;
-			showTree(prefix + node.getData().getValue0(), node, lines);
+			showTree(prefix + node.getData().word, node, lines);
 		}
 		if (isEmpty && !"".equals(prefix))
 			lines.add(prefix);
@@ -111,36 +144,26 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 	}
 	
 	public String showCompletion(String line) {
-		HashMap<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> commandTree = buildCommandTree(line);
-		/*
-		int depth = 0;
-		for (Entry<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> ct : commandTree.entrySet()) {
-			int d = ct.getValue().getMaxDepth();
-			if (d > depth)
-				depth = d;
-		}
-		*/
+		TreeNode<TokenNode<STATE>> commandTree = buildCommandTree(line);
+
 		System.out.println();
 		Vector<String> lines = new Vector<String>();
-		for (Entry<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> ct : commandTree.entrySet()) {
-			TreeNode<Pair<String, Boolean>> tree = ct.getValue();
-			//System.out.println("Tree:" + ct.getKey().toString() + " -> " + tree);
+		for (Entry<ShellCommand<STATE>, TreeNode<TokenNode<STATE>>> ct : commandTree.entrySet()) {
+			TreeNode<TokenNode<STATE>> tree = ct.getValue();
 			if (tree.getMaxDepth() > 0)
 				showTree("", ct.getValue(), lines);
 		}
-		
-		//for (String l : lines)
-		//	System.out.println("line=" + l);
+
 		return  getUnambiguousCompletions(lines, true);
 	}
 	
-	public void linearize(TreeNode<Pair<String, Boolean>> tree, Vector<String> line) {
-		Iterator<TreeNode<Pair<String, Boolean>>> ite = tree.iterator();
+	private void linearize(TreeNode<TokenNode<STATE>> tree, Vector<String> line) {
+		Iterator<TreeNode<TokenNode<STATE>>> ite = tree.iterator();
 		if (ite.hasNext()) {
-			TreeNode<Pair<String, Boolean>> child = ite.next();
+			TreeNode<TokenNode<STATE>> child = ite.next();
 			if (ite.hasNext())
 				throw new RuntimeException("nleaf != 1");
-			String s = child.getData().getValue0();
+			String s = child.getData().word();
 			line.add(s);
 			linearize(child, line);
 		}
@@ -153,12 +176,12 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 		if ("".equals(line))
 			return;
 		
-		HashMap<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> commandTree = buildCommandTree(line);
+		HashMap<ShellCommand<STATE>, TreeNode<TokenNode>> commandTree = buildCommandTree(line);
 		ShellCommand<STATE> command = null;
 		boolean unique = true;
-		for (Entry<ShellCommand<STATE>, TreeNode<Pair<String, Boolean>>> ct : commandTree.entrySet()) {
-			TreeNode<Pair<String, Boolean>> tree = ct.getValue();
-			if (tree.getData().getValue1() && tree.getNleaf() == 1) {
+		for (Entry<ShellCommand<STATE>, TreeNode<TokenNode>> ct : commandTree.entrySet()) {
+			TreeNode<TokenNode> tree = ct.getValue();
+			if (tree.getData().complete() && tree.getNleaf() == 1) {
 				if (command == null) {
 					command = ct.getKey();
 				}
@@ -172,75 +195,11 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 		if (unique == false || command == null)
 			showCompletion(line);
 		else {
-			TreeNode<Pair<String, Boolean>> tree = commandTree.get(command);
+			TreeNode<TokenNode> tree = commandTree.get(command);
 			Vector<String> args = new Vector<String>();
 			linearize(tree, args);
-			//System.out.println("execute command " + command + " with arg :");
-			//for (String a : args)
-			//	System.out.println(" - " + a);
+
 			command.execute(state, args.toArray(new String[args.size()]));
 		}
-			
-
-		/*
-		Vector<Token> currentTokens = grammar;
-		Pattern pattern = Pattern.compile("\\s+");
-		String[] words = pattern.split(line);
-		EnumCommands command = null;
-		
-		for (String word : words) {
-			if (currentTokens == null) {
-				System.out.println("Unexpected token " + word);
-				return;
-			}
-			
-			HashMap<String, Vector<Token>> candidates = new HashMap<String, Vector<Token>>();
-			for (Token token : currentTokens) {
-				for (String match : token.matches(word)) {
-					if (candidates.containsKey(match)) {
-						candidates.get(match).add(token);
-					}
-					else {
-						Vector<Token> tokens = new Vector<Token>();
-						tokens.add(token);
-						candidates.put(match, tokens);
-					}
-				}
-			}
-			
-			if (!candidates.isEmpty()) {
-				Set<String> possible_words = candidates.keySet();
-				if (possible_words.size() == 1) {
-					currentTokens = new Vector<Token>();
-					Vector<Token> tokens = candidates.get(word);
-					if (tokens.size() == 1)
-						command = tokens.firstElement().getCommand();
-					for (Token token : tokens)
-						currentTokens.addAll(Arrays.asList(token.getNextTokens(word)));
-				}
-				else {
-					System.out.println("Syntax error at token \"" + word + "\"");
-					System.out.print("Expected :");
-					for (String candidate : possible_words)
-						System.out.print(" " + candidate);
-					System.out.println();
-					return;
-				}
-			}
-			else {
-				System.out.println("Unexpected token " + word);
-				return;
-			}
-		}
-		if (command == null) {
-			System.out.println("Unfished command, expected :");
-			for (Token token : currentTokens)
-				System.out.print(" " + token);
-			System.out.println();
-		}
-		else {
-			command.execute(state, words);
-		}
-		*/
 	}
 }

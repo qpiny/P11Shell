@@ -250,7 +250,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 
 		@Override
 		public boolean available(ShellState state) {
-			return true;
+			return false;
 		}
 	},
 	TEMPLATE_CLEAR(_("template"), _("clear")) {
@@ -261,7 +261,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 
 		@Override
 		public boolean available(ShellState state) {
-			return true;
+			return false;
 		}
 	},
 	TEMPLATE_LIST(_("template"), _("list")) {
@@ -273,7 +273,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 
 		@Override
 		public boolean available(ShellState state) {
-			return true;
+			return false;
 		}
 	},
 	GET_ALL_ATTRIBUTES(_("get"), _("all"), _("attributes"), new AnyToken()) {
