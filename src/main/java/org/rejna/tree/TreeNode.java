@@ -8,7 +8,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 	private T data;
 	private Vector<TreeNode<T>> children = new Vector<TreeNode<T>>();
 	private int maxDepth = 0;
-	private int depth = 0; // really usefull ?
+	private int depth = 0;
 	private int nleaf = 0;
 	
 	private TreeNode(TreeNode<T> parent, int maxDepth, int depth, T data, int nleaf) {
@@ -73,6 +73,10 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 		return maxDepth;
 	}
 	
+	public int getDepth() {
+		return depth;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("<node depth=" + depth + " maxdepth=" + maxDepth + " nleaf=" + nleaf + " data=\"" + data.toString() + "\">");
@@ -80,5 +84,9 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 			sb.append(child.toString());
 		sb.append("</node>");
 		return sb.toString();
+	}
+
+	public TreeNode<T> getParent() {
+		return parent;
 	}
 }

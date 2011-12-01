@@ -17,33 +17,26 @@ import jline.ConsoleReader;
 class TokenNode<T> {
 	Token token;
 	String word;
+	String remainder;
 	boolean complete;
-	ShellCommand<T> Command;
+	ShellCommand<T> command;
 	boolean exact;
 	
-	public TokenNode(ShellCommand<T> command, Token token, String word, boolean complete, boolean exact) {
+	public TokenNode(ShellCommand<T> command, Token token, String word, String remainder, boolean complete, boolean exact) {
 		this.token = token;
 		this.word = word;
+		this.remainder = remainder;
 		this.complete = complete;
-		this.Command = command;
+		this.command = command;
 		this.exact = exact;
 	}
 	public TokenNode<T> complete(boolean complete) {
 		this.complete = complete;
 		return this;
 	}
-	public boolean complete() {
-		return complete;
-	}
-	public String word() {
-		return word;
-	}
 	public TokenNode<T> exact(boolean exact) {
 		this.exact = exact;
 		return this;
-	}
-	public boolean exact() {
-		return exact;
 	}
 }
 
@@ -89,34 +82,53 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 		}
 		return first.substring(0, best);
 	}
-
-	public boolean match(int index, String line, ShellCommand<STATE> command, Token[] tokens, TreeNode<TokenNode<STATE>> tree) {
-		boolean completed = false;
-		if (index < tokens.length) {
-			for (Pair<String, String> p : tokens[index].matches(line)) {
-				TreeNode<TokenNode<STATE>> node = tree.addChild(
-						new TokenNode<STATE>(command, tokens[index], p.getValue0(), false, line.startsWith(p.getValue0())));
-				if (match(index + 1, p.getValue1(), command, tokens, node)) {
-					node.getData().complete(true);
-					completed = true;
-				}
-			}
-		}
-		else 
-			completed = "".equals(line);
-		return completed;
-	}
 	
 	public TreeNode<TokenNode<STATE>> buildCommandTree(String line) {
-		TreeNode<TokenNode<STATE>> tree = TreeNode.newTree(new TokenNode<STATE>(null, null, "", false, false));   //new HashMap<ShellCommand<STATE>, TreeNode<TokenNode>>();
+		TreeNode<TokenNode<STATE>> tree = TreeNode.newTree(new TokenNode<STATE>(null, null, "", line, false, false));   //new HashMap<ShellCommand<STATE>, TreeNode<TokenNode>>();
 		
+		Vector<TreeNode<TokenNode<STATE>>> currentDepth = new Vector<TreeNode<TokenNode<STATE>>>();
+		Vector<TreeNode<TokenNode<STATE>>> nextDepth = new Vector<TreeNode<TokenNode<STATE>>>();
+		currentDepth.add(tree);
+
 		for (ShellCommand<STATE> command : commands) {
-			if (command.available(state))
-				match(0, line, command, command.getTokens(), tree);
+			Token token = command.getTokens()[0]; // empty array should be tested ? => no sense
+			for (Pair<String, String> p : token.matches(line)) {
+				String word = p.getValue0();
+				String remainder = p.getValue1();
+				currentDepth.add(tree.addChild(new TokenNode<STATE>(command, token, word, remainder, "".equals(remainder), line.startsWith(word))));
+			}
+		}
+		
+		while (tree.getMaxDepth() < 20 && !currentDepth.isEmpty()) {
+			for (TreeNode<TokenNode<STATE>> node : currentDepth) {
+				TokenNode<STATE> tn = node.getData();
+				Token[] tokens = tn.command.getTokens();
+				int depth = node.getDepth();
+				if (depth <= tokens.length) {
+					Token token = tokens[depth - 1];
+					boolean empty = true;
+					for (Pair<String, String> p : token.matches(tn.remainder)) {
+						String word = p.getValue0();
+						String remainder = p.getValue1();
+						nextDepth.add(node.addChild(new TokenNode<STATE>(tn.command, token, word, remainder, "".equals(remainder), tn.remainder.startsWith(word))));
+						empty = false;
+					} 
+					if (empty) {
+						/* if no match then prune tree */
+						while (node != null && node.getMaxDepth() == 1) {
+							TreeNode<TokenNode<STATE>> parent = node.getParent();
+							parent.removeChild(node);
+							node = parent;
+						}
+					}
+				}
+			}
+			currentDepth = nextDepth;
 		}
 		return tree;
 	}
-	
+ 
+	@Deprecated
 	public void showTree(String prefix, TreeNode<TokenNode<STATE>> tree, Vector<String> lines) {
 		boolean isEmpty = true;
 		if (!"".equals(prefix) && !prefix.endsWith(" "))
@@ -131,6 +143,11 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 	
 	@SuppressWarnings("rawtypes")
 	public int complete(String buffer, int cursor, List _candidates) {
+		TreeNode<TokenNode<STATE>> tree = buildCommandTree(console.getCursorBuffer().toString().trim());
+		
+		
+		
+		
 		String line = showCompletion(console.getCursorBuffer().toString().trim());
 		try {
 			System.out.println();
