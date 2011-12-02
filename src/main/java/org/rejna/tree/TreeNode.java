@@ -89,4 +89,8 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 	public TreeNode<T> getParent() {
 		return parent;
 	}
+	
+	public int getNchildren() {
+		return children.size();
+	}
 }
