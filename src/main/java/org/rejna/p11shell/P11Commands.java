@@ -205,16 +205,17 @@ public enum P11Commands implements ShellCommand<ShellState> {
 			return state.isLogged();
 		}
 	},
-	WRAP(_("wrap")) {
+	WRAP(_("wrap"), new MechanismToken()) {
 		@Override
 		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
-			//MechanismType.valueOf(arg0)
+			System.out.print("Execution of wrap with " + (MechanismType)args[0] + " and parameter ");
+			System.out.println(args[1]);
 			//TODO p11.wrap(mechanism, wrappingKey, wrappedKey, size)
 		}
 
 		@Override
 		public boolean available(ShellState state) {
-			return state.isLogged();
+			return true; //state.isLogged();
 		}
 	},
 	GENERATE_KEY(_("generate")) {
