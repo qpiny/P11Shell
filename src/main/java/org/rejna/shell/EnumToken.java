@@ -30,4 +30,9 @@ public class EnumToken<T extends Enum<T>> extends Token {
 	public String toString() {
 		return enumeration.toString();
 	}
+
+	@Override
+	public void addArguments(String value, Vector<Object> args) {
+		args.add(Enum.valueOf(enumeration, value));
+	}
 }

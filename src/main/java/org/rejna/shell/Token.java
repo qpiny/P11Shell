@@ -1,5 +1,6 @@
 package org.rejna.shell;
 
+import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.javatuples.Pair;
@@ -15,5 +16,6 @@ public abstract class Token {
 			return Pair.fromArray(a);
 	}
 	
+	public abstract void addArguments(String value, Vector<Object> args);
 	public abstract Iterable<Pair<String, String>> matches(String line);	
 }

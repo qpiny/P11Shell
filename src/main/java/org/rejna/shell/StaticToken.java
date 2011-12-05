@@ -1,6 +1,7 @@
 package org.rejna.shell;
 
 import java.util.Arrays;
+import java.util.Vector;
 
 import org.javatuples.Pair;
 
@@ -24,5 +25,9 @@ public class StaticToken extends Token {
 	@Override
 	public String toString() {
 		return name;
+	}
+
+	@Override
+	public void addArguments(String value, Vector<Object> args) {
 	}
 }

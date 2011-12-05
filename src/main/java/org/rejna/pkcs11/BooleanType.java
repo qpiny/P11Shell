@@ -1,16 +1,20 @@
 package org.rejna.pkcs11;
 
 public enum BooleanType implements P11Enum {
-	TRUE(1), FALSE(0);
+	TRUE(true), FALSE(false);
 
-	private int value;
+	private boolean value;
 	
-	private BooleanType(int value) {
+	private BooleanType(boolean value) {
 		this.value = value;
 	}
 	
 	@Override
 	public int getValue() {
+		return value ?  1 : 0;
+	}
+
+	public boolean getBoolValue() {
 		return value;
 	}
 }

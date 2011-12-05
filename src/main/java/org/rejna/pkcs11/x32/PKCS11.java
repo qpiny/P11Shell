@@ -95,7 +95,10 @@ public class PKCS11 extends org.rejna.pkcs11.PKCS11 {
 	
 	@Override
 	public void login(String pin) throws P11Exception {
-		checkRet(XltCkLibrary.C_Login(session, Defs.CKU_USER, Pointer.pointerToBytes(pin.getBytes()), pin.length()));
+		if (pin == null)
+			checkRet(XltCkLibrary.C_Login(session, Defs.CKU_USER, null, 0));
+		else
+			checkRet(XltCkLibrary.C_Login(session, Defs.CKU_USER, Pointer.pointerToBytes(pin.getBytes()), pin.length()));
 	}
 	
 	public void logout() throws P11Exception {

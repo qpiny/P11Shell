@@ -83,8 +83,12 @@ class Candidate<T> {
 		return this;
 	}
 
-	public void execute() {
-		// TODO Auto-generated method stub
+	public void execute(T state) throws Exception {
+		Vector<Object> args = new Vector<Object>();
+		for (Pair<Token, String> e : elements) {
+			e.getValue0().addArguments(e.getValue1(), args);
+		}
+		command.execute(state, args.toArray(new Object[args.size()]));
 		
 	}
 	
@@ -138,8 +142,6 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 		
 		Vector<TreeNode<TokenNode<STATE>>> currentDepth = new Vector<TreeNode<TokenNode<STATE>>>();
 		
-		//currentDepth.add(tree);
-
 		for (ShellCommand<STATE> command : commands) {
 			if (!command.available(state))
 				continue;
@@ -168,7 +170,7 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 					} 
 					if (empty) {
 						/* if no match then prune tree */
-						while (node != null && node.getMaxDepth() == 1) {
+						while (node != null && node.getDepth() > 0 && node.getNchildren() == 0) {
 							TreeNode<TokenNode<STATE>> parent = node.getParent();
 							parent.removeChild(node);
 							node = parent;
@@ -214,6 +216,7 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 	public int complete(String buffer, int cursor, List _candidates) {
 		TreeNode<TokenNode<STATE>> tree = buildCommandTree(console.getCursorBuffer().toString().trim());
 		Vector<Candidate<STATE>> candidates = getCandidates(tree, new Candidate<STATE>(null), new Vector<Candidate<STATE>>());
+		System.out.println("\n" + tree);
 		System.out.println();
 		String line = getUnambiguousCompletions(candidates, true);
 		try {
@@ -227,19 +230,6 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 		return 0;
 	}
 	
-	@Deprecated
-	private void linearize(TreeNode<TokenNode<STATE>> tree, Vector<String> line) {
-		Iterator<TreeNode<TokenNode<STATE>>> ite = tree.iterator();
-		if (ite.hasNext()) {
-			TreeNode<TokenNode<STATE>> child = ite.next();
-			if (ite.hasNext())
-				throw new RuntimeException("nleaf != 1");
-			String s = child.getData().word;
-			line.add(s);
-			linearize(child, line);
-		}
-	}
-	
 	public void execute(String line) throws Exception {
 		int comment = line.indexOf('#');
 		if (comment != -1)
@@ -249,15 +239,12 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 		TreeNode<TokenNode<STATE>> tree = buildCommandTree(line);
 		Vector<Candidate<STATE>> candidates = getCandidates(tree, new Candidate<STATE>(), new Vector<Candidate<STATE>>());
 		
-		if (candidates.size() == 1) {
-			candidates.firstElement().execute();
-			System.out.println("EXECUTE : " + candidates.firstElement());
-		} else {
+		if (candidates.size() == 1)
+			candidates.firstElement().execute(state);
+		else {
 			System.out.println("ERROR : ");
 			for (Candidate<STATE> candidate : candidates)
 				System.out.println(candidate);
 		}
-
-			//command.execute(state, args.toArray(new String[args.size()]));
 	}
 }

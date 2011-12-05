@@ -5,7 +5,7 @@ import java.util.EnumSet;
 
 import org.bridj.Pointer;
 import org.bridj.Pointer.StringType;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 
 public abstract class AttributeFormat {
 	public final static AttributeFormat STRING = new StringFormat();
@@ -165,7 +165,7 @@ class BinaryFormat extends AttributeFormat {
 
 	@Override
 	public String toString(Pointer<?> value, int size) {
-		return Base64.encodeBase64String(value.getBytes(size));
+		return Hex.encodeHexString(value.getBytes(size));
 	}
 
 	@Override

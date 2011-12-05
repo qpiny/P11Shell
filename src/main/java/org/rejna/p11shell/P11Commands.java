@@ -12,8 +12,8 @@ import org.rejna.pkcs11.P11Exception;
 import org.rejna.pkcs11.P11Object;
 import org.rejna.pkcs11.PKCS11;
 import org.rejna.pkcs11.BooleanType;
-import org.rejna.shell.AnyToken;
 import org.rejna.shell.EnumToken;
+import org.rejna.shell.IntegerToken;
 import org.rejna.shell.ShellCommand;
 import org.rejna.shell.StaticToken;
 import org.rejna.shell.Token;
@@ -22,7 +22,7 @@ import org.rejna.shell.Token;
 public enum P11Commands implements ShellCommand<ShellState> {
 	GET_INFO(_("info"), _("library")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
 			System.out.println(state.getPKCS11().getInfo());
 		}
 
@@ -33,7 +33,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	LIST_SLOT(_("list"), _("slot")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
 			int[] present = p11.getSlotList(true);
 			for (int s : p11.getSlotList(false)) {
 				if (Arrays.binarySearch(present, s) < 0)
@@ -51,7 +51,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	GET_SLOT_INFO(_("info"), _("slot")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
 			System.out.println(p11.getSlotInfo(slot));
 		}
 
@@ -62,7 +62,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	GET_TOKEN_INFO(_("info"), _("token")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
 			System.out.println(p11.getTokenInfo(slot));
 		}
 
@@ -73,7 +73,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	LIST_MECHANISM(_("list"), _("mechanism")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception, InvalidMechanismException {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception, InvalidMechanismException {
 			for (MechanismType m : p11.getMechanism(slot)) {
 				System.out.println(m);
 				System.out.println(p11.getMechanismInfo(slot, m));
@@ -87,8 +87,8 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	OPEN_SESSION(_("open"), _("session"), new EnumToken<BooleanType>(BooleanType.class)) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
-			state.getPKCS11().openSession(slot, Boolean.parseBoolean(args[2]));
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
+			state.getPKCS11().openSession(slot, ((BooleanType)args[0]).getBoolValue());
 			state.setInSession(true);
 		}
 
@@ -99,7 +99,15 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	LOGIN(_("login")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception, IOException {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception, IOException {
+			try {
+				state.getPKCS11().login(null);
+			} catch (P11Exception e) {
+				if (e.getCode() == Defs.CKR_USER_ALREADY_LOGGED_IN) {
+					state.setLogged(true);
+					return;
+				}
+			}
 			try {
 				state.getPKCS11().login(state.getPIN());
 			} catch (P11Exception e) {
@@ -117,7 +125,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	LOGOUT(_("logout")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
 			p11.logout();
 			state.setLogged(false);
 		}
@@ -129,7 +137,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	CLOSE_SESSION(_("close"), _("session")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
 			if (state.isLogged()) {
 				p11.logout();
 				state.setLogged(false);
@@ -145,7 +153,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	CLOSE_ALL_SESSION(_("close"), _("all"), _("session")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
 			if (state.isLogged()) {
 				p11.logout();
 				state.setLogged(false);
@@ -161,7 +169,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	FIND_OBJECTS(_("find"), _("objects")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
 			for (P11Object o : p11.findObjects(state.getAttributes()))
 				System.out.println(o);
 		}
@@ -171,11 +179,11 @@ public enum P11Commands implements ShellCommand<ShellState> {
 			return state.isLogged();
 		}
 	},
-	GET_ATTRIBUTE(_("get"), _("attribute"), new AnyToken()) {
+	GET_ATTRIBUTE(_("get"), _("attribute"), new IntegerToken()) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws NumberFormatException, P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws NumberFormatException, P11Exception {
 			for (Attribute attribute : state.getAttributes()) {
-				p11.getAttribute(new P11Object(Integer.parseInt(args[2])), attribute);
+				p11.getAttribute(new P11Object((Integer)args[0]), attribute);
 				System.out.println(attribute);
 			}
 		}
@@ -185,11 +193,11 @@ public enum P11Commands implements ShellCommand<ShellState> {
 			return state.isLogged();
 		}
 	},
-	SET_ATTRIBUTE(_("set"), _("attribute"), new AnyToken()) {
+	SET_ATTRIBUTE(_("set"), _("attribute"), new IntegerToken()) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws NumberFormatException, P11Exception {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws NumberFormatException, P11Exception {
 			for (Attribute attribute : state.getAttributes())
-				p11.setAttribute(new P11Object(Integer.parseInt(args[2])), attribute);
+				p11.setAttribute(new P11Object((Integer)args[0]), attribute);
 		}
 
 		@Override
@@ -199,7 +207,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	WRAP(_("wrap")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
 			//MechanismType.valueOf(arg0)
 			//TODO p11.wrap(mechanism, wrappingKey, wrappedKey, size)
 		}
@@ -211,8 +219,8 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	GENERATE_KEY(_("generate")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			// TODO p11.generateKey(mechanism, state.getAttributes());
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
+			//p11.generateKey(mechanism, state.getAttributes());
 		}
 
 		@Override
@@ -220,10 +228,10 @@ public enum P11Commands implements ShellCommand<ShellState> {
 			return state.isLogged();
 		}
 	},
-	SELECT_SLOT(_("select"), _("slot"), new AnyToken()) {
+	SELECT_SLOT(_("select"), _("slot"), new IntegerToken()) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			state.setSlot(Integer.parseInt(args[2]));			
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
+			state.setSlot((Integer)args[0]);			
 		}
 
 		@Override
@@ -233,8 +241,8 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	TEMPLATE_ADD(_("template"), _("add"), new AttributeToken()) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			state.addAttribute(AttributeType.valueOf(args[2]).getAttribute(args[3]));
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
+			state.addAttribute((Attribute)args[1]);
 		}
 
 		@Override
@@ -244,8 +252,8 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	TEMPLATE_REMOVE(_("template"), _("remove"), new EnumToken<AttributeType>(AttributeType.class)) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
-			state.removeAttribute(AttributeType.valueOf(args[2]));
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
+			state.removeAttribute((AttributeType)args[0]);
 		}
 
 		@Override
@@ -255,7 +263,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	TEMPLATE_CLEAR(_("template"), _("clear")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
 			state.clearAttribute();
 		}
 
@@ -266,7 +274,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	},
 	TEMPLATE_LIST(_("template"), _("list")) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, String[] args) {
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
 			for (Attribute attribute : state.getAttributes())
 				System.out.println(attribute);
 		}
@@ -276,25 +284,34 @@ public enum P11Commands implements ShellCommand<ShellState> {
 			return false;
 		}
 	},
-	GET_ALL_ATTRIBUTES(_("get"), _("all"), _("attributes"), new AnyToken()) {
+	GET_ALL_ATTRIBUTES(_("get"), _("all"), _("attributes"), new IntegerToken()) {
 		@Override
 		public void execute(ShellState state, PKCS11 p11, int slot,
-				String[] args) throws P11Exception, InvalidMechanismException,
+				Object[] args) throws P11Exception, InvalidMechanismException,
 				IOException {
-			P11Object obj = new P11Object(Integer.parseInt(args[3]));
+			P11Object obj = new P11Object((Integer)args[0]);
 			for (AttributeType at : AttributeType.values()) {
+				int size = at.getDefaultSize();
 				Attribute attribute = at.getAttribute();
-				try {
-					p11.getAttribute(obj, attribute);
-					System.out.println(attribute);
-				} catch (P11Exception e) {
-					if (e.getCode() == Defs.CKR_ATTRIBUTE_SENSITIVE)
-						System.out.println(attribute.attributeType() + " is sensitive");
-					else if (e.getCode() != Defs.CKR_ATTRIBUTE_TYPE_INVALID)
-						System.out.println(attribute.attributeType() + " " + e);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				while (true) {
+					try {
+						p11.getAttribute(obj, attribute);
+						System.out.println(attribute);
+					} catch (P11Exception e) {
+						if (e.getCode() == Defs.CKR_ATTRIBUTE_SENSITIVE)
+							System.out.println(attribute.attributeType() + " is sensitive");
+						else if (e.getCode() == Defs.CKR_BUFFER_TOO_SMALL) {
+							size = 2 * size;
+							attribute = at.getAttribute(size);
+							continue;
+						}
+						else if (e.getCode() != Defs.CKR_ATTRIBUTE_TYPE_INVALID)
+							System.out.println(attribute.attributeType() + " " + e.getMessage());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					break;
+				} 
 			}
 			
 		}
@@ -319,10 +336,10 @@ public enum P11Commands implements ShellCommand<ShellState> {
 		return new StaticToken(name);
 	}
 	
-	public abstract void execute(ShellState state, PKCS11 p11, int slot, String[] args) throws P11Exception, InvalidMechanismException, IOException;
+	public abstract void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception, InvalidMechanismException, IOException;
 	
 	@Override
-	public void execute(ShellState state, String[] args) throws Exception {
+	public void execute(ShellState state, Object[] args) throws Exception {
 		execute(state, state.getPKCS11(), state.getSlot(), args);
 	}
 }
