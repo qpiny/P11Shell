@@ -21,6 +21,8 @@ public class AnyToken extends Token {
 		Pair<String, String> split = split(line);
 		if (can_be_empty)
 			return Arrays.asList(split, new Pair<String, String>("", line));
+		else if ("".equals(split.getValue0()))
+			return Arrays.asList();
 		else
 			return Arrays.asList(split);
 	}

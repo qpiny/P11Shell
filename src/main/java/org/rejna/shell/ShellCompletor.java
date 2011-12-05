@@ -16,7 +16,7 @@ class TokenNode<T> {
 	Token token;
 	String word;
 	String remainder;
-	boolean complete;
+	boolean complete; // not useful any longer
 	ShellCommand<T> command;
 	boolean exact;
 	
@@ -43,24 +43,44 @@ class TokenNode<T> {
 }
 
 class Candidate<T> {
+	private Vector<Pair<Token,String>> elements = new Vector<Pair<Token,String>>();
+	private ShellCommand<T> command = null;
 
-	public void add(Token token, String word) {
-		// TODO Auto-generated method stub
-		
+	public Candidate(ShellCommand<T> command) {
+		this.command = command;
 	}
 	
+	public Candidate() {
+	}
+	
+	private Candidate(ShellCommand<T> command, Vector<Pair<Token,String>> elements) {
+		this.elements = elements;
+	}
+	
+	public void add(Token token, String word) {
+		elements.add(new Pair<Token, String>(token, word));
+	}
+	
+	@SuppressWarnings("unchecked")
 	public Object clone() {
-		return null;
+		return new Candidate<T>(command, (Vector<Pair<Token,String>>) elements.clone());
 	}
 
 	public String getLine() {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuilder sb = new StringBuilder();
+		for (Pair<Token, String> e : elements) {
+			sb.append(' ').append(e.getValue1());
+		}
+		return sb.substring(1);
 	}
 
 	public ShellCommand<T> getCommand() {
-		// TODO Auto-generated method stub
-		return null;
+		return command;
+	}
+	
+	public Candidate<T> setCommand(ShellCommand<T> command) {
+		this.command = command;
+		return this;
 	}
 
 	public void execute() {
@@ -136,9 +156,9 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 			for (TreeNode<TokenNode<STATE>> node : currentDepth) {
 				TokenNode<STATE> tn = node.getData();
 				Token[] tokens = tn.command.getTokens();
-				int depth = node.getDepth();
-				if (depth < tokens.length) {
-					Token token = tokens[depth];
+				int ntoken = node.getDepth();
+				if (ntoken < tokens.length) {
+					Token token = tokens[ntoken];
 					boolean empty = true;
 					for (Pair<String, String> p : token.matches(tn.remainder)) {
 						String word = p.getValue0();
@@ -161,19 +181,6 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 		return tree;
 	}
  
-	@Deprecated
-	public void showTree(String prefix, TreeNode<TokenNode<STATE>> tree, Vector<String> lines) {
-		boolean isEmpty = true;
-		if (!"".equals(prefix) && !prefix.endsWith(" "))
-			prefix = prefix + " ";
-		for (TreeNode<TokenNode<STATE>> node : tree) {
-			isEmpty = false;
-			showTree(prefix + node.getData().word, node, lines);
-		}
-		if (isEmpty && !"".equals(prefix))
-			lines.add(prefix);
-	}
-	
 	@SuppressWarnings("unchecked")
 	public Vector<Candidate<STATE>> getCandidates(
 			TreeNode<TokenNode<STATE>> tree,
@@ -183,6 +190,7 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 		Vector<Candidate<STATE>> result = new Vector<Candidate<STATE>>();
 		boolean exactFound = false;
 		for (TreeNode<TokenNode<STATE>> node : tree) {
+			Candidate<STATE> c = (Candidate<STATE>) candidate.clone();
 			if (exactFound && !node.getData().exact)
 				continue;
 			if (node.getData().exact && !exactFound) {
@@ -190,11 +198,12 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 				result.clear();
 			}
 			TokenNode<STATE> data = node.getData();
-			candidate.add(data.token, data.word);
+			c.setCommand(data.command);
+			c.add(data.token, data.word);
 			if (node.getNchildren() == 0) {
-				result.add(candidate);
+				result.add(c);
 			} else {
-				getCandidates(node, (Candidate<STATE>) candidate.clone(), result);
+				getCandidates(node, c, result);
 			}
 		}
 		candidates.addAll(result);
@@ -204,10 +213,7 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 	@SuppressWarnings("rawtypes")
 	public int complete(String buffer, int cursor, List _candidates) {
 		TreeNode<TokenNode<STATE>> tree = buildCommandTree(console.getCursorBuffer().toString().trim());
-		Vector<Candidate<STATE>> candidates = getCandidates(tree, new Candidate<STATE>(), new Vector<Candidate<STATE>>());
-		//if (candidates.size() > 1)
-		//	for (String candidate : candidates)
-		//		System.out.println(candidate);
+		Vector<Candidate<STATE>> candidates = getCandidates(tree, new Candidate<STATE>(null), new Vector<Candidate<STATE>>());
 		System.out.println();
 		String line = getUnambiguousCompletions(candidates, true);
 		try {
