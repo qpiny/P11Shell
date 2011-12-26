@@ -1,40 +1,47 @@
 package org.rejna.p11shell;
 
-import java.util.Arrays;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.javatuples.Pair;
-import org.rejna.pkcs11.AttributeType;
 import org.rejna.pkcs11.MechanismType;
+import org.rejna.pkcs11.PKCS11;
 import org.rejna.shell.Token;
 
 public class MechanismToken extends Token {
-	static final Pattern pattern = Pattern.compile("\\s*([\\S&&[^\\(]]*)((?:\\([^\\)]*)\\))?(?:\\s+(\\S+))?");
-
+	private static final Pattern startNamePattern = Pattern.compile("[\\p{Alnum}_]");
+	private static final Pattern endNamePattern = Pattern.compile("[^\\p{Alnum}_]");
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Iterable<Pair<String, String>> matches(String line) {
+		String mechname = "";
+		String remainder = "";
+		String param = "";
 		Vector<Pair<String, String>> matches = new Vector<Pair<String, String>>();
-		Matcher matcher = pattern.matcher(line);
-		if (!matcher.find()) {
-			System.out.println("no match");
-			return Arrays.asList();
+		Matcher m = startNamePattern.matcher(line);
+		if (m.find()) {
+			line = line.substring(m.start());
+			
+			m = endNamePattern.matcher(line);
+			if (m.find()) {
+				int start = m.start();
+				mechname = line.substring(0, start);
+				if (line.charAt(start) == '(') {
+					int end = line.indexOf(')', start);
+					if (end == -1)
+						param = line.substring(start);
+					else
+						param = line.substring(start, end + 1);
+				}
+			}
+			else
+				mechname = line;
 		}
 		
-		String word = matcher.group(1);
-		String param = matcher.group(2);
-		if (param == null)
-			param = "";
-		String remainder = matcher.group(3);
-		if (remainder == null)
-			remainder = "";
-
 		for (MechanismType mech : MechanismType.values()) {
 			String name = mech.name();
-			if (name.startsWith(word))
+			if (name.startsWith(mechname))
 				matches.add(new Pair<String, String>(name + param, remainder));
 		}
 		return matches;
@@ -42,10 +49,15 @@ public class MechanismToken extends Token {
 	
 	@Override
 	public void addArguments(String value, Vector<Object> args) {
-		Matcher matcher = pattern.matcher(value);
-		if (!matcher.find())
-			return;
-		args.add(MechanismType.valueOf(matcher.group(1)));
-		args.add(matcher.group(2));
+		int i = value.indexOf('(');
+		if (i == -1)
+			args.add(PKCS11.getInstance().createMechanism(MechanismType.valueOf(value)));
+		else
+			args.add(PKCS11.getInstance().createMechanism(MechanismType.valueOf(value.substring(0, i)), Integer.parseInt(value.substring(i + 1, value.length() - 1))));
+	}
+	
+	@Override
+	public String toString() {
+		return "MechanismToken";
 	}
 }

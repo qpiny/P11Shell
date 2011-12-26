@@ -7,6 +7,7 @@ import org.rejna.pkcs11.Attribute;
 import org.rejna.pkcs11.AttributeType;
 import org.rejna.pkcs11.Defs;
 import org.rejna.pkcs11.InvalidMechanismException;
+import org.rejna.pkcs11.Mechanism;
 import org.rejna.pkcs11.MechanismType;
 import org.rejna.pkcs11.P11Exception;
 import org.rejna.pkcs11.P11Object;
@@ -205,23 +206,25 @@ public enum P11Commands implements ShellCommand<ShellState> {
 			return state.isLogged();
 		}
 	},
-	WRAP(_("wrap"), new MechanismToken()) {
+	WRAP(_("wrap"), new MechanismToken(), new IntegerToken(), new IntegerToken(), new IntegerToken()) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
-			System.out.print("Execution of wrap with " + (MechanismType)args[0] + " and parameter ");
-			System.out.println(args[1]);
-			//TODO p11.wrap(mechanism, wrappingKey, wrappedKey, size)
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
+			p11.wrap((Mechanism)args[0],
+					new P11Object((Integer)args[1]),
+					new P11Object((Integer)args[2]),
+					(Integer)args[3]);
 		}
 
 		@Override
 		public boolean available(ShellState state) {
+			System.out.println("wrap is available");
 			return true; //state.isLogged();
 		}
 	},
-	GENERATE_KEY(_("generate")) {
+	GENERATE_KEY(_("generate"), new MechanismToken()) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
-			//p11.generateKey(mechanism, state.getAttributes());
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
+			p11.generateKey((Mechanism)args[0], state.getAttributes());
 		}
 
 		@Override
