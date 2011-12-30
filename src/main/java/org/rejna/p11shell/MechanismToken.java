@@ -5,8 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.javatuples.Pair;
+import org.rejna.pkcs11.Mechanism;
 import org.rejna.pkcs11.MechanismType;
-import org.rejna.pkcs11.PKCS11;
 import org.rejna.shell.Token;
 
 public class MechanismToken extends Token {
@@ -51,9 +51,9 @@ public class MechanismToken extends Token {
 	public void addArguments(String value, Vector<Object> args) {
 		int i = value.indexOf('(');
 		if (i == -1)
-			args.add(PKCS11.getInstance().createMechanism(MechanismType.valueOf(value)));
+			args.add(new Mechanism(MechanismType.valueOf(value)));
 		else
-			args.add(PKCS11.getInstance().createMechanism(MechanismType.valueOf(value.substring(0, i)), Integer.parseInt(value.substring(i + 1, value.length() - 1))));
+			args.add(new Mechanism(MechanismType.valueOf(value.substring(0, i)), Long.parseLong(value.substring(i + 1, value.length() - 1))));
 	}
 	
 	@Override

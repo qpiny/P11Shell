@@ -217,8 +217,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 
 		@Override
 		public boolean available(ShellState state) {
-			System.out.println("wrap is available");
-			return true; //state.isLogged();
+			return state.isLogged();
 		}
 	},
 	GENERATE_KEY(_("generate"), new MechanismToken()) {
@@ -295,8 +294,9 @@ public enum P11Commands implements ShellCommand<ShellState> {
 				IOException {
 			P11Object obj = new P11Object((Integer)args[0]);
 			for (AttributeType at : AttributeType.values()) {
+				System.out.println("Attribute: " + at);
 				int size = at.getDefaultSize();
-				Attribute attribute = at.getAttribute();
+				Attribute attribute = at.createAttribute();
 				while (true) {
 					try {
 						p11.getAttribute(obj, attribute);
@@ -306,7 +306,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 							System.out.println(attribute.attributeType() + " is sensitive");
 						else if (e.getCode() == Defs.CKR_BUFFER_TOO_SMALL) {
 							size = 2 * size;
-							attribute = at.getAttribute(size);
+							attribute = at.createAttribute(size);
 							continue;
 						}
 						else if (e.getCode() != Defs.CKR_ATTRIBUTE_TYPE_INVALID)

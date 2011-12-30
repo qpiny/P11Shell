@@ -153,7 +153,7 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 			}
 		}
 		
-		while (tree.getMaxDepth() < 20 && !currentDepth.isEmpty()) {
+		while (tree.getNleaf() < 20 && !currentDepth.isEmpty()) {
 			Vector<TreeNode<TokenNode<STATE>>> nextDepth = new Vector<TreeNode<TokenNode<STATE>>>();
 			for (TreeNode<TokenNode<STATE>> node : currentDepth) {
 				TokenNode<STATE> tn = node.getData();

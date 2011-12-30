@@ -1,7 +1,8 @@
-package org.rejna.pkcs11.x32;
+package org.rejna.pkcs11;
 
 import org.bridj.Pointer;
 import org.bridj.StructObject;
+import org.bridj.ann.CLong;
 import org.bridj.ann.Field;
 import org.bridj.ann.Library;
 
@@ -17,22 +18,26 @@ public class SessionInfo extends StructObject {
 	}
 	
 	@Field(0) 
-	public int slotID() {
-		return this.io.getIntField(this, 0);
+	@CLong
+	public long slotID() {
+		return this.io.getCLongField(this, 0);
 	}
 
 	@Field(1) 
-	public int state() {
-		return this.io.getIntField(this, 1);
+	@CLong
+	public long state() {
+		return this.io.getCLongField(this, 1);
 	}
 	
-	@Field(2) 
-	public int flags() {
-		return this.io.getIntField(this, 2);
+	@Field(2)
+	@CLong
+	public long flags() {
+		return this.io.getCLongField(this, 2);
 	}
 	
 	@Field(3) 
-	public int deviceError() {
-		return this.io.getIntField(this, 3);
+	@CLong
+	public long deviceError() {
+		return this.io.getCLongField(this, 3);
 	}
 }

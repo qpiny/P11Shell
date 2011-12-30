@@ -10,21 +10,15 @@ public class Shell {
 	private ConsoleReader cr;
 	
 	public static void main(String[] args) {
-		if (args.length != 1) {
-			System.out.println("Usage: p11shell <arch>");
-			System.out.println("arch : 32 or 64 depending of your system");
-			System.out.println("note : for Windows 64bits, arch = 32");
-		}
-		else
-			new Shell().start(Integer.parseInt(args[0]));
+		new Shell().start();
 	}
 	
 	
-	public void start(int arch) {
+	public void start() {
 		try {
 			cr = new ConsoleReader();
 			cr.setBellEnabled(false);
-			ShellState state = new ShellState(PKCS11.getInstance(arch), cr);
+			ShellState state = new ShellState(PKCS11.getInstance(), cr);
 			ShellCompletor<ShellState, P11Commands> p11cmds = new ShellCompletor<ShellState, P11Commands>(cr, P11Commands.values(), state);
 			cr.addCompletor(p11cmds);
 			while (true) {

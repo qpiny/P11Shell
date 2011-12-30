@@ -1,5 +1,7 @@
 package org.rejna.pkcs11;
 
+import org.bridj.Pointer;
+import org.javatuples.Pair;
 import org.rejna.pkcs11.AttributeFormat;
 
 public enum AttributeType implements P11Enum {
@@ -346,20 +348,38 @@ CKA_COEFFICIENT(0x00000128, AttributeFormat.BINARY)
 	}
 
 	public String toString(Attribute attribute) throws InvalidAttributeException {
-		return format.toString(attribute.value(), attribute.size());
+		return format.toString(attribute.value(), (int) attribute.size());
 	}
 	
 	public Object toObject(Attribute attribute) throws InvalidAttributeException {
-		return format.toObject(attribute.value(), attribute.size());
+		return format.toObject(attribute.value(), (int) attribute.size());
 	}
 	
+	public Attribute createAttribute() {
+		return createAttribute(getDefaultSize());
+	}
+	
+	public Attribute createAttribute(int size) {
+		return new Attribute(this, Pointer.allocateBytes(size), size);
+	}
+	
+	public Attribute createAttribute(String value) {
+		return new Attribute(this, Pointer.pointerToCString(value), value.length());
+	}
+	
+	public Attribute createAttribute(Object obj) {
+		Pair<Pointer<?>,Long> p  = format.fromObject(obj);
+		return new Attribute(this, p.getValue0(), p.getValue1());
+	}
+	
+	/*
 	public Attribute getAttribute() {
 		return format.createAttribute(this);
 	}
 	
 	public Attribute getAttribute(int size) {
 		return format.createAttribute(this, size);
-	}
+	}*
 	
 	public Attribute getAttribute(Object value) {
 		return fillTemplate(getAttribute(), value);
@@ -382,6 +402,7 @@ CKA_COEFFICIENT(0x00000128, AttributeFormat.BINARY)
 		}
 		return fillTemplate(attribute, (Object) value);
 	}
+	*/
 	
 	public abstract <T extends Enum<T>> Class<T> getPossible();
 	
