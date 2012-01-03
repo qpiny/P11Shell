@@ -33,6 +33,6 @@ public class AttributeToken extends EnumToken<AttributeType> {
 		Pair<String, String> s = split(value);
 		AttributeType attrType = AttributeType.valueOf(s.getValue0());
 		args.add(attrType);
-		args.add(attrType.getAttribute(s.getValue1()));
+		args.add(attrType.createAttribute(s.getValue1()));
 	}
 }

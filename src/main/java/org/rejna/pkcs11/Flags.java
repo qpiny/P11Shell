@@ -3,7 +3,7 @@ package org.rejna.pkcs11;
 public class Flags {
 	private String message;
 	
-	public Flags(int flags) {
+	public Flags(long flags) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(").append(flags).append(") ");
 		if ((flags & 0x00000001) != 0) sb.append("CKF_TOKEN_PRESENT ");

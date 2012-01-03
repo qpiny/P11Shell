@@ -7,6 +7,7 @@ import org.rejna.pkcs11.Attribute;
 import org.rejna.pkcs11.AttributeType;
 import org.rejna.pkcs11.Defs;
 import org.rejna.pkcs11.InvalidMechanismException;
+import org.rejna.pkcs11.Mechanism;
 import org.rejna.pkcs11.MechanismType;
 import org.rejna.pkcs11.P11Exception;
 import org.rejna.pkcs11.P11Object;
@@ -34,8 +35,8 @@ public enum P11Commands implements ShellCommand<ShellState> {
 	LIST_SLOT(_("list"), _("slot")) {
 		@Override
 		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
-			int[] present = p11.getSlotList(true);
-			for (int s : p11.getSlotList(false)) {
+			long[] present = p11.getSlotList(true);
+			for (long s : p11.getSlotList(false)) {
 				if (Arrays.binarySearch(present, s) < 0)
 					System.out.print(" " + s + " ");
 				else
@@ -205,23 +206,24 @@ public enum P11Commands implements ShellCommand<ShellState> {
 			return state.isLogged();
 		}
 	},
-	WRAP(_("wrap"), new MechanismToken()) {
+	WRAP(_("wrap"), new MechanismToken(), new IntegerToken(), new IntegerToken(), new IntegerToken()) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
-			System.out.print("Execution of wrap with " + (MechanismType)args[0] + " and parameter ");
-			System.out.println(args[1]);
-			//TODO p11.wrap(mechanism, wrappingKey, wrappedKey, size)
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
+			p11.wrap((Mechanism)args[0],
+					new P11Object((Integer)args[1]),
+					new P11Object((Integer)args[2]),
+					(Integer)args[3]);
 		}
 
 		@Override
 		public boolean available(ShellState state) {
-			return true; //state.isLogged();
+			return state.isLogged();
 		}
 	},
-	GENERATE_KEY(_("generate")) {
+	GENERATE_KEY(_("generate"), new MechanismToken()) {
 		@Override
-		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) {
-			//p11.generateKey(mechanism, state.getAttributes());
+		public void execute(ShellState state, PKCS11 p11, int slot, Object[] args) throws P11Exception {
+			p11.generateKey((Mechanism)args[0], state.getAttributes());
 		}
 
 		@Override
@@ -292,8 +294,9 @@ public enum P11Commands implements ShellCommand<ShellState> {
 				IOException {
 			P11Object obj = new P11Object((Integer)args[0]);
 			for (AttributeType at : AttributeType.values()) {
+				System.out.println("Attribute: " + at);
 				int size = at.getDefaultSize();
-				Attribute attribute = at.getAttribute();
+				Attribute attribute = at.createAttribute();
 				while (true) {
 					try {
 						p11.getAttribute(obj, attribute);
@@ -303,7 +306,7 @@ public enum P11Commands implements ShellCommand<ShellState> {
 							System.out.println(attribute.attributeType() + " is sensitive");
 						else if (e.getCode() == Defs.CKR_BUFFER_TOO_SMALL) {
 							size = 2 * size;
-							attribute = at.getAttribute(size);
+							attribute = at.createAttribute(size);
 							continue;
 						}
 						else if (e.getCode() != Defs.CKR_ATTRIBUTE_TYPE_INVALID)

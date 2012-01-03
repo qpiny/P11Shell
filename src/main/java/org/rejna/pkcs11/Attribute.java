@@ -2,15 +2,12 @@ package org.rejna.pkcs11;
 
 import org.bridj.Pointer;
 import org.bridj.StructObject;
+import org.bridj.ann.CLong;
+import org.bridj.ann.Field;
+import org.bridj.ann.Library;
 
-public abstract class Attribute extends StructObject {
-
-	abstract public int type();
-	abstract public Attribute type(int type);
-	abstract public Pointer<?> value();
-	abstract public Attribute value(Pointer<?> value);
-	abstract public int size();
-	abstract public Attribute size(int size);
+@Library("xltCk") 
+public class Attribute extends StructObject {
 
 	public Attribute() {
 		super();
@@ -21,13 +18,15 @@ public abstract class Attribute extends StructObject {
 		super(pointer);
 	}
 	
-	public Attribute(AttributeType type, Object value) {
+	protected Attribute(AttributeType type, Pointer<?> value, long size) {
 		super();
-		type.fillTemplate(this, value);
+		attributeType(type);
+		value(value);
+		size(size);
 	}	
 
 	public AttributeType attributeType() {
-		return AttributeType.valueOf(type());
+		return AttributeType.valueOf((int) type());
 	}
 
 	public Attribute attributeType(AttributeType type) {
@@ -53,5 +52,40 @@ public abstract class Attribute extends StructObject {
 		attribute.type(type());
 		attribute.value(value());
 		attribute.size(size());		
+	}
+
+	@Field(0) 
+	@CLong
+	public long type() {
+		return this.io.getCLongField(this, 0);
+	}
+
+	@Field(0) 
+	public Attribute type(long type) {
+		this.io.setCLongField(this, 0, type);
+		return this;
+	}
+
+	@Field(1) 
+	public Pointer<?> value() {
+		return this.io.getPointerField(this, 1);
+	}
+
+	@Field(1) 
+	public Attribute value(Pointer<?> value) {
+		this.io.setPointerField(this, 1, value);
+		return this;
+	}
+
+	@Field(2) 
+	@CLong
+	public long size() {
+		return this.io.getCLongField(this, 2);
+	}
+	
+	@Field(2) 
+	public Attribute size(long size) {
+		this.io.setCLongField(this, 2, size);
+		return this;
 	}
 }

@@ -1,10 +1,10 @@
 package org.rejna.pkcs11;
 
-import java.nio.charset.Charset;
 import java.util.EnumSet;
 
+import org.bridj.CLong;
 import org.bridj.Pointer;
-import org.bridj.Pointer.StringType;
+import org.javatuples.Pair;
 import org.apache.commons.codec.binary.Hex;
 
 public abstract class AttributeFormat {
@@ -16,9 +16,8 @@ public abstract class AttributeFormat {
 	public abstract int getDefaultSize();
 	public abstract Object toObject(Pointer<?> value, int size) throws InvalidAttributeException;
 	public abstract String toString(Pointer<?> value, int size) throws InvalidAttributeException;
-	public abstract Attribute setAttribute(Attribute attribute, Object value);
-	public abstract Attribute createAttribute(AttributeType type);
-	public abstract Attribute createAttribute(AttributeType type, int size);
+	public abstract Pair<Pointer<?>,Long> fromObject(Object value);
+	public abstract Pair<Pointer<?>, Long> fromString(String value);
 }
 
 class StringFormat extends AttributeFormat {
@@ -37,23 +36,16 @@ class StringFormat extends AttributeFormat {
 	public String toString(Pointer<?> value, int size) {
 		return new String(value.getBytes(size));
 	}
-	
+
 	@Override
-	public Attribute setAttribute(Attribute attribute, Object value) {
-		String s = (String) value;
-		attribute.value(Pointer.pointerToString(s, StringType.C, Charset.defaultCharset()));
-		attribute.size(s.length());
-		return attribute;
+	public Pair<Pointer<?>,Long> fromObject(Object value) {
+		String s = value.toString();
+		return new Pair<Pointer<?>, Long>(Pointer.pointerToCString(s), (long) s.length());
 	}
 
 	@Override
-	public Attribute createAttribute(AttributeType type) {
-		return createAttribute(type, getDefaultSize());		
-	}
-
-	@Override
-	public Attribute createAttribute(AttributeType type, int size) {
-		return PKCS11.getInstance().createAttribute(type, new String(new char[size]));
+	public Pair<Pointer<?>, Long> fromString(String value) {
+		return fromObject(value);
 	}
 }
 
@@ -81,34 +73,23 @@ class IntegerFormat extends AttributeFormat {
 	}
 
 	@Override
-	public Attribute setAttribute(Attribute attribute, Object value) {
-		if (value instanceof Long) {
-			attribute.value(Pointer.pointerToLong(((Long)value).longValue()));
-			attribute.size(8);				
-		}
-		else if (value instanceof Integer) {
-			attribute.value(Pointer.pointerToInt(((Integer)value).intValue()));
-			attribute.size(4);
-		}
-		else if (value instanceof Short) {
-			attribute.value(Pointer.pointerToShort(((Short)value).shortValue()));
-			attribute.size(2);				
-		}
-		else if (value instanceof Long) {
-			attribute.value(Pointer.pointerToByte(((Byte)value).byteValue()));
-			attribute.size(1);				
-		}
-		return attribute;
+	public Pair<Pointer<?>,Long> fromObject(Object value) {
+		if (value instanceof Long)
+			return new Pair<Pointer<?>, Long>(Pointer.pointerToLong(((Long)value).longValue()), 8L);
+		else if (value instanceof Integer)
+			return new Pair<Pointer<?>, Long>(Pointer.pointerToInt(((Integer)value).intValue()), 4L);
+		else if (value instanceof Short)
+			return new Pair<Pointer<?>, Long>(Pointer.pointerToShort(((Short)value).shortValue()), 2L);
+		else if (value instanceof Byte)
+			return new Pair<Pointer<?>, Long>(Pointer.pointerToByte(((Short)value).byteValue()), 1L);
+		else if (value instanceof CLong)
+			return new Pair<Pointer<?>, Long>(Pointer.pointerToCLong(((Long)value).longValue()), (long) Long.SIZE);
+		return null;
 	}
 
 	@Override
-	public Attribute createAttribute(AttributeType type) {
-		return PKCS11.getInstance().createAttribute(type, Integer.valueOf(0));
-	}
-
-	@Override
-	public Attribute createAttribute(AttributeType type, int size) {
-		return PKCS11.getInstance().createAttribute(type, Pointer.allocateBytes(size));
+	public Pair<Pointer<?>, Long> fromString(String value) {
+		return fromObject(new CLong(Long.parseLong(value)));
 	}
 }
 
@@ -132,7 +113,7 @@ class BooleanFormat extends AttributeFormat {
 			return "<not set>";
 		return toObject(value, size).toString();
 	}
-
+/*
 	@Override
 	public Attribute setAttribute(Attribute attribute, Object value) {
 		attribute.value(Pointer.pointerToBoolean((Boolean)value));
@@ -148,6 +129,16 @@ class BooleanFormat extends AttributeFormat {
 	@Override
 	public Attribute createAttribute(AttributeType type, int size) {
 		return PKCS11.getInstance().createAttribute(type, Pointer.allocateBytes(size));
+	}
+*/
+	@Override
+	public Pair<Pointer<?>,Long> fromObject(Object value) {
+		return new Pair<Pointer<?>, Long>(Pointer.pointerToBoolean((Boolean)value), 1L);
+	}
+
+	@Override
+	public Pair<Pointer<?>, Long> fromString(String value) {
+		return fromObject(Boolean.parseBoolean(value));
 	}
 }
 
@@ -167,7 +158,7 @@ class BinaryFormat extends AttributeFormat {
 	public String toString(Pointer<?> value, int size) {
 		return Hex.encodeHexString(value.getBytes(size));
 	}
-
+/*
 	@Override
 	public Attribute setAttribute(Attribute attribute, Object value) {
 		byte[] b = (byte[])value;
@@ -185,6 +176,18 @@ class BinaryFormat extends AttributeFormat {
 	public Attribute createAttribute(AttributeType type, int size) {
 		return PKCS11.getInstance().createAttribute(type, new byte[size]);
 	}
+*/
+	@Override
+	public Pair<Pointer<?>,Long> fromObject(Object value) {
+		byte[] b = (byte[])value;
+		return new Pair<Pointer<?>, Long>(Pointer.pointerToBytes(b), (long) b.length);
+	}
+
+	@Override
+	public Pair<Pointer<?>, Long> fromString(String value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
 
 class EnumFormat<T extends Enum<T>> extends IntegerFormat {
@@ -192,6 +195,20 @@ class EnumFormat<T extends Enum<T>> extends IntegerFormat {
 	
 	public EnumFormat(Class<T> c) {
 		this.c = c;
+	}
+	
+	@Override
+	public Pair<Pointer<?>,Long> fromObject(Object value) {
+		P11Enum pe = (P11Enum) value;
+		return super.fromObject(new CLong(pe.getValue()));
+	}
+
+	@Override
+	public Pair<Pointer<?>, Long> fromString(String value) {
+		for (T e : EnumSet.allOf(c))
+			if (e.name().equals(value))
+				return super.fromObject(new CLong(((P11Enum) e).getValue()));
+		return null;
 	}
 /*
 	@Override
@@ -211,7 +228,7 @@ class EnumFormat<T extends Enum<T>> extends IntegerFormat {
 		}
 		return "";
 	}
-
+/*
 	@Override
 	public Attribute setAttribute(Attribute attribute, Object value) {
 		if (value instanceof String) {
@@ -226,5 +243,5 @@ class EnumFormat<T extends Enum<T>> extends IntegerFormat {
 		}
 		return attribute;
 	}
-	
+	*/
 }

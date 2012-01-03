@@ -2,14 +2,14 @@ package org.rejna.pkcs11;
 
 
 public class P11Object {
-	private int handle;
+	private long handle;
 	
-	public P11Object(int obj) {
+	public P11Object(long obj) {
 		this.handle = obj;
 	}
 
 	public Attribute getAttribute(AttributeType type) throws P11Exception {
-		Attribute template = type.getAttribute();
+		Attribute template = type.createAttribute();
 		try {
 			PKCS11.getInstance().getAttribute(this, template);
 		} catch (P11Exception e) {
@@ -20,7 +20,7 @@ public class P11Object {
 	}
 	
 	public Attribute getAttribute(AttributeType type, int size) throws P11Exception {
-		Attribute template = type.getAttribute(size);
+		Attribute template = type.createAttribute(size);
 		try {
 			PKCS11.getInstance().getAttribute(this, template);
 		} catch (P11Exception e) {
@@ -32,11 +32,10 @@ public class P11Object {
 	
 	public void setAttribute(AttributeType type, Object value) throws P11Exception {
 		PKCS11 p11 = PKCS11.getInstance();
-		p11.setAttribute(this, p11.createAttribute(type, value));
-		
+		p11.setAttribute(this, type.createAttribute(value)); 
 	}
-	
-	public int getHandle() {
+
+	public long getHandle() {
 		return handle;
 	}
 	

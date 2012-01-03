@@ -153,7 +153,7 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 			}
 		}
 		
-		while (tree.getMaxDepth() < 20 && !currentDepth.isEmpty()) {
+		while (tree.getNleaf() < 20 && !currentDepth.isEmpty()) {
 			Vector<TreeNode<TokenNode<STATE>>> nextDepth = new Vector<TreeNode<TokenNode<STATE>>>();
 			for (TreeNode<TokenNode<STATE>> node : currentDepth) {
 				TokenNode<STATE> tn = node.getData();
@@ -216,8 +216,8 @@ public class ShellCompletor<STATE, CMD extends ShellCommand<STATE>> implements C
 	public int complete(String buffer, int cursor, List _candidates) {
 		TreeNode<TokenNode<STATE>> tree = buildCommandTree(console.getCursorBuffer().toString().trim());
 		Vector<Candidate<STATE>> candidates = getCandidates(tree, new Candidate<STATE>(null), new Vector<Candidate<STATE>>());
-		System.out.println("\n" + tree);
-		System.out.println();
+		//System.out.println("\n" + tree);
+		//System.out.println();
 		String line = getUnambiguousCompletions(candidates, true);
 		try {
 			System.out.println();
