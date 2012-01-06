@@ -283,5 +283,4 @@ public class PKCS11 {
 	private static native long C_VerifyUpdate(long session, Pointer<Byte > CK_BYTE_PTR1, long CK_ULONG1);
 	private static native long C_WaitForSlotEvent(long CK_FLAGS1, Pointer<CLong > CK_SLOT_ID_PTR1, Pointer<? > CK_VOID_PTR1);
 	private static native long C_WrapKey(long session, Pointer<Mechanism > CK_MECHANISM_PTR1, long CK_OBJECT_HANDLE1, long CK_OBJECT_HANDLE2, Pointer<Byte > CK_BYTE_PTR1, Pointer<CLong > CK_ULONG_PTR1);
-
 }

@@ -53,7 +53,7 @@ class IntegerFormat extends AttributeFormat {
 
 	@Override
 	public int getDefaultSize() {
-		return 4;
+		return CLong.SIZE;
 	}
 
 	@Override

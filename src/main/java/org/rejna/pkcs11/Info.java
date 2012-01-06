@@ -9,6 +9,7 @@ import org.bridj.ann.Struct;
 import org.rejna.pkcs11.Version;
 
 @Library("xltCk")
+@Struct(customizer = DisableAlignmentIfWindows.class)
 public class Info extends StructObject {
 	public Info() {
 		super();

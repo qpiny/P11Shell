@@ -3,6 +3,7 @@ package org.rejna.pkcs11;
 
 public class P11Object {
 	private long handle;
+	private String toString = null;
 	
 	public P11Object(long obj) {
 		this.handle = obj;
@@ -41,11 +42,14 @@ public class P11Object {
 	
 	@Override
 	public String toString() {
-		try {
-			Attribute attr = getAttribute(AttributeType.CKA_CLASS);
-			return "Object " + handle + " " + ObjectType.valueOf(((Number)attr.object()).intValue());
-		} catch (Exception e) {
-			return "Object " + handle + " (error : " + e.getClass().getCanonicalName() + ":" + e.getMessage() + ")";
+		if (toString == null) {
+			try {	
+				Attribute attr = getAttribute(AttributeType.CKA_CLASS);
+				toString = "Object " + handle + " " + ObjectType.valueOf(((Number)attr.object()).intValue());
+			} catch (Exception e) {
+				toString =  "Object " + handle + " (error : " + e.getClass().getCanonicalName() + ":" + e.getMessage() + ")";
+			}
 		}
+		return toString;
 	}
 }

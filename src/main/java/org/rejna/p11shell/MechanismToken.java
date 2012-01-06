@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 import org.javatuples.Pair;
 import org.rejna.pkcs11.Mechanism;
 import org.rejna.pkcs11.MechanismType;
-import org.rejna.pkcs11.PKCS11;
 import org.rejna.shell.Token;
 
 public class MechanismToken extends Token {
